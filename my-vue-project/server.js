@@ -7,12 +7,12 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Настройка подключения к базе данных MySQL
+
 const db = mysql.createConnection({
   host: 'localhost',
-  user: 'root',      // Замените на имя пользователя MySQL
-  password: 'qwerty050',  // Замените на пароль MySQL
-  database: 'blocks_db'   // Название вашей базы данных
+  user: 'root',      
+  password: 'qwerty050',  
+  database: 'blocks_db'   
 });
 
 db.connect((err) => {
@@ -23,16 +23,16 @@ db.connect((err) => {
   console.log('Подключение к базе данных установлено.');
 });
 
-// Разрешение CORS для фронтенд-запросов
+
 app.use(cors());
 
-// Настройка bodyParser для обработки JSON запросов
+
 app.use(bodyParser.json());
 
-// Раздача статических файлов из папки dist
+
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// API маршрут для получения всех блоков и их элементов
+
 app.get('/api/blocks', (req, res) => {
   const query = 'SELECT * FROM blocks';
   db.query(query, (err, blocks) => {
@@ -41,7 +41,7 @@ app.get('/api/blocks', (req, res) => {
       return res.status(500).json({ error: 'Ошибка сервера' });
     }
 
-    // Для каждого блока получаем его элементы
+    
     const blockIds = blocks.map(block => block.id);
     const itemQuery = 'SELECT * FROM items WHERE block_id IN (?)';
     db.query(itemQuery, [blockIds], (err, items) => {
@@ -50,17 +50,17 @@ app.get('/api/blocks', (req, res) => {
         return res.status(500).json({ error: 'Ошибка сервера' });
       }
 
-      // Добавляем элементы к каждому блоку
+      
       blocks.forEach(block => {
         block.items = items.filter(item => item.block_id === block.id);
       });
 
-      res.json(blocks); // Отправляем блоки с элементами
+      res.json(blocks); 
     });
   });
 });
 
-// API маршрут для создания нового блока
+
 app.post('/api/blocks', (req, res) => {
   const { title } = req.body;
   const query = 'INSERT INTO blocks (title) VALUES (?)';
@@ -73,7 +73,7 @@ app.post('/api/blocks', (req, res) => {
   });
 });
 
-// API маршрут для добавления элемента в блок
+
 app.post('/api/items', (req, res) => {
   const { block_id, content } = req.body;
 
@@ -91,7 +91,7 @@ app.post('/api/items', (req, res) => {
   });
 });
 
-// API маршрут для удаления блока и связанных элементов
+
 app.delete('/api/blocks/:id', (req, res) => {
   const blockId = req.params.id;
   const deleteItemsQuery = 'DELETE FROM items WHERE block_id = ?';
@@ -113,7 +113,7 @@ app.delete('/api/blocks/:id', (req, res) => {
   });
 });
 
-// Обработка маршрутов и отправка index.html для всех путей (SPA)
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
